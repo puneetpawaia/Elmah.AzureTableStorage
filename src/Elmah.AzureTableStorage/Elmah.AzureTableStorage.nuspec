@@ -10,9 +10,9 @@
     <projectUrl>https://github.com/MisinformedDNA/Elmah.AzureTableStorage</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <copyright>Copyright 2015</copyright>
+    <copyright>Copyright 2022</copyright>
     <tags>elmah azure</tags>
-    <releaseNotes>Azure packages updated. Requires Azure .NET SDK 2.7 to use Development Storage Emulator</releaseNotes>
+    <releaseNotes>All packages updated. .Net Framework updated to 4.8</releaseNotes>
   </metadata>
   <files>
     <file src="content\*.*" target="content\" />

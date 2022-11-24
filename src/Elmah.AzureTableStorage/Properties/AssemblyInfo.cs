@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
@@ -8,9 +7,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ELMAH on Azure Table Storage")]
 [assembly: AssemblyDescription("ELMAH with configuration for getting started quickly on Azure Table Storage as the error log.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Dan Friedman")]
+[assembly: AssemblyCompany("Puneet Pawaia")]
 [assembly: AssemblyProduct("ELMAH on Azure Table Storage")]
-[assembly: AssemblyCopyright("Copyright ©  2015. All rights reserved.")]
+[assembly: AssemblyCopyright("Copyright ©  2022. All rights reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +31,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.1.0")]
+[assembly: AssemblyFileVersion("1.0.1.0")]

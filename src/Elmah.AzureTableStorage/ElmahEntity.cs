@@ -1,10 +1,10 @@
-﻿using System.Data.Services.Common;
-using Microsoft.WindowsAzure.Storage.Table;
-using System;
+﻿using System;
+using Azure;
+using Azure.Data.Tables;
 
 namespace Elmah.AzureTableStorage
 {
-    public class ElmahEntity : TableEntity
+    public class ElmahEntity : ITableEntity
     {
         public ElmahEntity()
         {
@@ -12,8 +12,11 @@ namespace Elmah.AzureTableStorage
         }
 
         public ElmahEntity(string applicationName)
-            : base(AzureHelper.EncodeAzureKey(applicationName), (DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks).ToString("d19"))
+            : base()
         {
+            ApplicationName = applicationName;
+            PartitionKey = AzureHelper.EncodeAzureKey(applicationName);
+            RowKey = (DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks).ToString("d19");
         }
 
         public string ApplicationName { get; set; }
@@ -24,5 +27,11 @@ namespace Elmah.AzureTableStorage
         public string User { get; set; }
         public int StatusCode { get; set; }
         public string AllXml { get; set; }
+        public string PartitionKey { get; set; }
+
+        // additional implementation of ITableEntity
+        public string RowKey { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
+        public ETag ETag { get; set; }
     }
 }

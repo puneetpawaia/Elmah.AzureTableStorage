@@ -1,9 +1,11 @@
-﻿using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
+﻿using Azure.Data.Tables;
 using System;
 using System.Collections;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Azure;
+using System.Collections.Concurrent;
+using Azure.Data.Tables.Models;
 
 namespace Elmah.AzureTableStorage
 {
@@ -14,7 +16,7 @@ namespace Elmah.AzureTableStorage
 
     public class AzureTableStorageErrorLog : ErrorLog
     {
-        private readonly CloudTable _cloudTable;
+        private readonly TableClient _tableClient;
         private const string DefaultTableName = "Elmah";
         private const string TableValidationRegex = "^[A-Za-z][A-Za-z0-9]{2,62}$";
 
@@ -49,11 +51,19 @@ namespace Elmah.AzureTableStorage
             if(!Regex.IsMatch(tableName, TableValidationRegex))
                 throw new ApplicationException("Name for table in Azure Table Storage is not a valid name.");
 
+            // get the cloud storage details from connection string using Azure.Data.Tables
+            var tableServiceClient = new TableServiceClient(connectionString);
+            TableItem table = tableServiceClient.CreateTableIfNotExists(tableName);
+            _tableClient = tableServiceClient.GetTableClient(tableName);
+            _tableClient.CreateIfNotExists();
+
+
+/*
             var cloudStorageAccount = CloudStorageAccount.Parse(connectionString);
             var tableClient = cloudStorageAccount.CreateCloudTableClient();
             _cloudTable = tableClient.GetTableReference(tableName);
             _cloudTable.CreateIfNotExists();
-
+*/
             //
             // Set the application name as this implementation provides
             // per-application isolation over a single store.
@@ -106,8 +116,12 @@ namespace Elmah.AzureTableStorage
                 User = error.User,
             };
 
+            _tableClient.AddEntityAsync(elmahEntity);
+
+            /*
             var tableOperation = TableOperation.Insert(elmahEntity);
             _cloudTable.Execute(tableOperation);
+            */
 
             return elmahEntity.RowKey;
         }
@@ -125,13 +139,7 @@ namespace Elmah.AzureTableStorage
             // Skip is not allowed, so we will take extra records and then discard ones that weren't requested.
             // This obviously has a performance hit, but since users are usually looking at the latest ones, this may be OK for most scenarios.
             var partitionKey = AzureHelper.EncodeAzureKey(ApplicationName);
-            var tableQuery = _cloudTable.CreateQuery<ElmahEntity>()
-                .Where(e => e.PartitionKey == partitionKey)
-                .Take((pageIndex + 1) * pageSize);
-
-            var errorEntities = _cloudTable
-                .ExecuteQuery(tableQuery as TableQuery<ElmahEntity>)
-                .Skip(pageIndex * pageSize);
+            Pageable<ElmahEntity> errorEntities = _tableClient.Query<ElmahEntity>(e => e.PartitionKey == partitionKey);
 
             foreach (var errorEntity in errorEntities)
             {
@@ -157,12 +165,10 @@ namespace Elmah.AzureTableStorage
             if (id == null) throw new ArgumentNullException("id");
             if (id.Length == 0) throw new ArgumentException(null, "id");
 
-            var elmahEntity = _cloudTable.CreateQuery<ElmahEntity>()
-                .Where(e => e.RowKey == id)
-                .ToList()
-                .First();
-
-            var error = ErrorXml.DecodeString(elmahEntity.AllXml);
+            Pageable<ElmahEntity> errorEntities = _tableClient.Query<ElmahEntity>(e => e.RowKey == id);
+            var errorEntityPage = errorEntities.AsPages().First();
+            var errorEntity = errorEntityPage.Values.First();
+            var error = ErrorXml.DecodeString(errorEntity.AllXml);
             return new ErrorLogEntry(this, id, error);
         }
     }
