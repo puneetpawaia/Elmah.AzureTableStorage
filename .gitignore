@@ -4,3 +4,7 @@
 obj/
 bin/
 /.vs
+/.tools/
+/.nuget/
+/artifacts/
+TestResults/

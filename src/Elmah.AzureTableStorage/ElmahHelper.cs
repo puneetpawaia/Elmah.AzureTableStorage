@@ -18,6 +18,7 @@ namespace Elmah.AzureTableStorage
 
         public static string GetConnectionString(IDictionary config)
         {
+            if (config == null) throw new ArgumentNullException(nameof(config));
             //
             // First look for a connection string name that can be 
             // subsequently indexed into the <connectionStrings> section of 
@@ -53,9 +54,14 @@ namespace Elmah.AzureTableStorage
             //
 
             var connectionStringAppKey = config.Find("connectionStringAppKey", string.Empty);
-            return connectionStringAppKey.Length > 0
-                 ? CloudConfigurationManager.GetSetting(connectionStringAppKey)
-                 : string.Empty;
+            if (connectionStringAppKey.Length == 0) return string.Empty;
+
+            // Classic Azure role settings rely on Windows' assembly cache.
+            // Ordinary application settings also work when running under Mono.
+            var setting = Environment.OSVersion.Platform == PlatformID.Win32NT
+                ? CloudConfigurationManager.GetSetting(connectionStringAppKey, outputResultsToTrace: false)
+                : ConfigurationManager.AppSettings[connectionStringAppKey];
+            return setting ?? string.Empty;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using Azure;
+using System.Globalization;
 using Azure.Data.Tables;
 
 namespace Elmah.AzureTableStorage
@@ -12,11 +13,12 @@ namespace Elmah.AzureTableStorage
         }
 
         public ElmahEntity(string applicationName)
-            : base()
         {
-            ApplicationName = applicationName;
+            ApplicationName = applicationName ?? string.Empty;
             PartitionKey = AzureHelper.EncodeAzureKey(applicationName);
-            RowKey = (DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks).ToString("d19");
+            // Reverse ticks keep newest-first ordering; the suffix avoids collisions.
+            RowKey = (DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks).ToString("d19", CultureInfo.InvariantCulture)
+                + "_" + Guid.NewGuid().ToString("N");
         }
 
         public string ApplicationName { get; set; }
